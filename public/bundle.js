@@ -1,37 +1,69 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Contact = require('./contact');
+var Backbone = require('backbone');
+var Contact  = require('./contact3');
 
-var contact = new Contact({
+var alice = new Contact({
   firstName: 'Alice',
   lastName: 'Henderson',
   email: 'alice@example.com'
 }, { validate: true });
 
-console.log(contact.toJSON());
-console.log(contact.attributes)
-console.log(JSON.stringify(contact, null, 4));
+var bob = new Contact({
+  firstName: 'Bob',
+  lastName: 'Henderson',
+  email: 'bob@example.com'
+}, { validate: true });
 
-// hogeメソッドから独自のイベントを起動している
-contact.hoge();
+var ContactCollection = Backbone.Collection.extend({
+  model: Contact,
+  initialize: function() {
+    console.log('ContactCollectionが初期化されました');
+    this.on('add', function(model){
+      console.log('contactモデルが追加されました : ' + model.get("firstName"));
+    });
+  },
 
-
-// オプションにvalidate:true を渡すとvalidationエラーなので書き変わらない
-contact.set({
-  lastName: ''
-}, {
-  validate: true
+  url: '/json/contacts.json',
 });
-console.log(contact.toJSON());
+
+var collection = new ContactCollection([alice]);
+collection.add(bob); // addイベントはこの時だけ発生
+
+// console.log(collection.length);
+// console.log(JSON.stringify(collection, null, 4));
+
+// collection.remove(bob);
+// console.log(JSON.stringify(collection, null, 4));
 
 
-// validateしないでnullにすると値が更新されるが、 isValid() メソッドはfalseとなる
-contact.set({
-  lastName: ''
+// collection.each(function(contact){
+//   console.log("ループ: " + contact.get("firstName"));
+// });
+
+// var filtered = collection.filter(function(contact) {
+//   return contact.get("firstName") === 'Alice';
+// });
+// console.log(JSON.stringify(filtered));
+
+
+
+collection.fetch({
+  success: function(collection) {
+    console.log('fetch完了');
+    collection.each(function(row){
+      console.log(row.toJSON());
+    });
+    // console.log(JSON.stringify(collection, null, 2));
+  }
 });
-console.log(contact.isValid());
-console.log(JSON.stringify(contact, null, 4));
 
-},{"./contact":2}],2:[function(require,module,exports){
+// collection.fetch().then(function(collection) {
+//   console.log('promiss fetch ')
+// })
+
+// console.log(JSON.stringify(collection, null, 2));
+
+},{"./contact3":2,"backbone":3}],2:[function(require,module,exports){
 var Backbone = require('backbone');
 
 var Contact = Backbone.Model.extend({
@@ -40,32 +72,6 @@ var Contact = Backbone.Model.extend({
     lastName: '',
     email: ''
   },
-  initialize: function() {
-    this.on('change', function() {
-      console.log("属性が変更されました");
-    });
-
-    this.on('change:email', function() {
-      console.log('emailが変更されました');
-    });
-
-    this.on('select', function(aa) {
-      console.log(aa + ' : selectイベントが発生しました');
-    });
-
-    this.on('invalid', function(model, err){
-      console.log(err);
-    });
-  },
-  hoge: function() {
-    this.selected = true;
-    this.trigger('select', this.selected);
-  },
-  validate: function(attrs){
-    if (!attrs.firstName || !attrs.lastName) {
-      return 'first, last Name 必須です'
-    }
-  }
 });
 
 module.exports = Contact;
