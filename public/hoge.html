@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Backbone</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js'></script>
+</head>
+<body>
+
+<script type="text/template" id="contact-template">
+  <div>Name: <%= firstName %> <%= lastName %></div>
+  <div>Email: <%= email %></div>
+</script>
+
+
+
+<script>
+var Contact = Backbone.Model.extend({
+  defaults: {
+    firstName: '',
+    lastName: '',
+    email: ''
+  },
+});
+
+var ContactView = Backbone.View.extend({
+  initialize: function() {
+    console.log("ContactViewが初期化されました");
+  },
+
+  render: function() {
+    var templ = $('#contact-template').html();
+    console.log(templ);
+    console.log(this.model.toJSON());
+    var html = _.template(templ);
+
+    console.log(html(this.model.toJSON()));
+
+    this.$el.html(html(this.model.toJSON()));
+
+    return this;
+  }
+});
+
+var contact = new Contact({
+  firstName: "alice",
+  lastName: 'hhhh',
+  email: 'alice@test.com'
+});
+
+var contactView = new ContactView({
+  model: contact
+});
+
+$(function() {
+  contactView.render().$el.appendTo($(document.body));
+});
+
+</script>
+
+</body>
+</html>
