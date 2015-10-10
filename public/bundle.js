@@ -1,25 +1,74 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var Contact = require('./contact');
+
+var contact = new Contact({
+  firstName: 'Alice',
+  lastName: 'Henderson',
+  email: 'alice@example.com'
+}, { validate: true });
+
+console.log(contact.toJSON());
+console.log(contact.attributes)
+console.log(JSON.stringify(contact, null, 4));
+
+// hogeメソッドから独自のイベントを起動している
+contact.hoge();
+
+
+// オプションにvalidate:true を渡すとvalidationエラーなので書き変わらない
+contact.set({
+  lastName: ''
+}, {
+  validate: true
+});
+console.log(contact.toJSON());
+
+
+// validateしないでnullにすると値が更新されるが、 isValid() メソッドはfalseとなる
+contact.set({
+  lastName: ''
+});
+console.log(contact.isValid());
+console.log(JSON.stringify(contact, null, 4));
+
+},{"./contact":2}],2:[function(require,module,exports){
 var Backbone = require('backbone');
-var $ = require('jquery');
-// Backbone.$ = $;
 
-var Book = require("./book");
-
-console.log(new Book().get("author"));
-console.log(new Book().get("title"));
-
-},{"./book":2,"backbone":3,"jquery":5}],2:[function(require,module,exports){
-var Backbone = require("backbone");
-
-var Book = Backbone.Model.extend({
+var Contact = Backbone.Model.extend({
   defaults: {
-      title: "A book",
-      author: 'Yuji'
+    firstName: '',
+    lastName: '',
+    email: ''
+  },
+  initialize: function() {
+    this.on('change', function() {
+      console.log("属性が変更されました");
+    });
+
+    this.on('change:email', function() {
+      console.log('emailが変更されました');
+    });
+
+    this.on('select', function(aa) {
+      console.log(aa + ' : selectイベントが発生しました');
+    });
+
+    this.on('invalid', function(model, err){
+      console.log(err);
+    });
+  },
+  hoge: function() {
+    this.selected = true;
+    this.trigger('select', this.selected);
+  },
+  validate: function(attrs){
+    if (!attrs.firstName || !attrs.lastName) {
+      return 'first, last Name 必須です'
     }
+  }
 });
 
-module.exports = Book;
-
+module.exports = Contact;
 
 },{"backbone":3}],3:[function(require,module,exports){
 (function (global){
@@ -12681,4 +12730,4 @@ return jQuery;
 
 }));
 
-},{}]},{},[1,2]);
+},{}]},{},[1]);
